@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendario Notion</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: transparent;
+      padding: 20px;
+    }
+
+    .calendar {
+      background: #ffffff;
+      color: #37352f;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .calendar-header button {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 8px;
+      color: #37352f;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .calendar-header button:hover {
+      background: rgba(55, 53, 47, 0.08);
+    }
+
+    .calendar-header h2 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .calendar-weekday {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 8px 0;
+      color: rgba(55, 53, 47, 0.6);
+    }
+
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .calendar-day:hover {
+      background: rgba(55, 53, 47, 0.08);
+    }
+
+    .calendar-day.other-month {
+      color: rgba(55, 53, 47, 0.3);
+    }
+
+    .calendar-day.today {
+      background: #37352f;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .calendar-day.today:hover {
+      background: #2e2c28;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .calendar {
+        background: #37352f;
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .calendar-header button {
+        color: #ffffff;
+      }
+
+      .calendar-header button:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .calendar-weekday {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .calendar-day:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .calendar-day.other-month {
+        color: rgba(255, 255, 255, 0.3);
+      }
+
+      .calendar-day.today {
+        background: #ffffff;
+        color: #37352f;
+      }
+
+      .calendar-day.today:hover {
+        background: #e8e8e8;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="calendar">
+    <div class="calendar-header">
+      <button id="prevMonth">‹</button>
+      <h2 id="monthYear"></h2>
+      <button id="nextMonth">›</button>
+    </div>
+    <div class="calendar-weekdays">
+      <div class="calendar-weekday">M</div>
+      <div class="calendar-weekday">T</div>
+      <div class="calendar-weekday">W</div>
+      <div class="calendar-weekday">T</div>
+      <div class="calendar-weekday">F</div>
+      <div class="calendar-weekday">S</div>
+      <div class="calendar-weekday">S</div>
+    </div>
+    <div class="calendar-days" id="calendarDays"></div>
+  </div>
+
+  <script>
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    let currentDate = new Date();
+    let displayedMonth = currentDate.getMonth();
+    let displayedYear = currentDate.getFullYear();
+
+    function renderCalendar() {
+      const monthYear = document.getElementById('monthYear');
+      const calendarDays = document.getElementById('calendarDays');
+      
+      monthYear.textContent = `${monthNames[displayedMonth]} ${displayedYear}`;
+      
+      const firstDay = new Date(displayedYear, displayedMonth, 1);
+      const lastDay = new Date(displayedYear, displayedMonth + 1, 0);
+      const prevLastDay = new Date(displayedYear, displayedMonth, 0);
+      
+      let firstDayWeekday = firstDay.getDay();
+      // Converti da domenica (0) a lunedì (0)
+      firstDayWeekday = firstDayWeekday === 0 ? 6 : firstDayWeekday - 1;
+      const lastDayDate = lastDay.getDate();
+      const prevLastDayDate = prevLastDay.getDate();
+      
+      calendarDays.innerHTML = '';
+      
+      // Giorni del mese precedente
+      for (let i = firstDayWeekday - 1; i >= 0; i--) {
+        const day = document.createElement('div');
+        day.className = 'calendar-day other-month';
+        day.textContent = prevLastDayDate - i;
+        calendarDays.appendChild(day);
+      }
+      
+      // Giorni del mese corrente
+      for (let i = 1; i <= lastDayDate; i++) {
+        const day = document.createElement('div');
+        day.className = 'calendar-day';
+        day.textContent = i;
+        
+        // Evidenzia il giorno corrente
+        if (i === currentDate.getDate() && 
+            displayedMonth === currentDate.getMonth() && 
+            displayedYear === currentDate.getFullYear()) {
+          day.classList.add('today');
+        }
+        
+        calendarDays.appendChild(day);
+      }
+      
+      // Giorni del mese successivo
+      const totalCells = calendarDays.children.length;
+      const remainingCells = 42 - totalCells; // 6 righe x 7 giorni
+      
+      for (let i = 1; i <= remainingCells; i++) {
+        const day = document.createElement('div');
+        day.className = 'calendar-day other-month';
+        day.textContent = i;
+        calendarDays.appendChild(day);
+      }
+    }
+
+    document.getElementById('prevMonth').addEventListener('click', () => {
+      displayedMonth--;
+      if (displayedMonth < 0) {
+        displayedMonth = 11;
+        displayedYear--;
+      }
+      renderCalendar();
+    });
+
+    document.getElementById('nextMonth').addEventListener('click', () => {
+      displayedMonth++;
+      if (displayedMonth > 11) {
+        displayedMonth = 0;
+        displayedYear++;
+      }
+      renderCalendar();
+    });
+
+    renderCalendar();
+  </script>
+</body>
+</html>
